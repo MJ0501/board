@@ -1,4 +1,7 @@
 package com.springboot.board.repository;
 
-public interface ArticleRepository {
+import com.springboot.board.domain.Article;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ArticleRepository extends JpaRepository<Article, Long> {
 }
