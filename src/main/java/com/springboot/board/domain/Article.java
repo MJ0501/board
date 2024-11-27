@@ -22,9 +22,8 @@ import java.util.Set;
         @Index(columnList = "createdBy"),
 })
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Article {
+public class Article extends AuditingFields{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -42,18 +41,6 @@ public class Article {
     @OneToMany(mappedBy = "article", cascade = CascadeType.ALL)
     private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
     // TODO: cascade - 운영목적으로 덧글남길필요있을 시 해제하기.
-
-    @Column(nullable = false) @CreatedDate
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false, length = 100) @CreatedBy
-    private String createdBy;
-
-    @Column(nullable = false) @LastModifiedDate
-    private LocalDateTime modifiedAt;
-
-    @Column(nullable = false, length = 100) @LastModifiedBy
-    private String modifiedBy;
 
     private Article(String title, String content, String hashtag) {
         this.title = title;
