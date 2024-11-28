@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판 페이지</title>
+</head>
+<body>
+<header th:replace="header :: header"></header>
+<main>
+    <form action="">
+        <label for="search-type" hidden>유형</label>
+        <select name="search-type" id="search-type">
+            <option value="">제목</option>
+            <option value="">본문</option>
+            <option value="">ID</option>
+            <option value="">닉네임</option>
+            <option value="">해시태그</option>
+        </select>
+        <input type="search" name="search-value" id="search-value" placeholder="검색어를 입력하세요">
+        <button type="submit">검색</button>
+    </form>
+    네이게이션 바 <br>
+    테이블
+    <table>
+        <thead>
+        <tr>
+            <th>제목</th>
+            <th>해시태그</th>
+            <th>작성자</th>
+            <th>작성일</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>첫 글</th>
+                <th>#board</th>
+                <th>MJ</th>
+                <th>2024-11-29</th>
+            </tr>
+            <tr>
+                <th>두번째 글</th>
+                <th>#spring</th>
+                <th>MJ</th>
+                <th>2024-11-30</th>
+            </tr>
+            <tr>
+                <th>세번째 글</th>
+                <th>#test</th>
+                <th>MJ</th>
+                <th>2024-12-01</th>
+            </tr>
+        </tbody>
+    </table>
+    <nav>
+        <table>
+            <tr>
+                <td>previous</td>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+                <td>next</td>
+            </tr>
+        </table>
+    </nav>
+</main>
+<footer th:replace="footer :: footer"></footer>
+</body>
+</html>
