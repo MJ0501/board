@@ -15,19 +15,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("게시글/게시판 View")
 @WebMvcTest(ArticleController.class)
 class ArticleControllerTest {
-    @Autowired
+
     private final MockMvc mvc;
 
-    public ArticleControllerTest(MockMvc mvc){
+    public ArticleControllerTest(@Autowired MockMvc mvc){
         this.mvc = mvc;
     }
-    @Disabled("구현 중")
+//    @Disabled("구현 중")
     @DisplayName("GET/게시글 목록")
     @Test
     public void whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
         mvc.perform(get("/articles"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"));
     }
@@ -38,7 +38,7 @@ class ArticleControllerTest {
     public void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         mvc.perform(get("/articles/1"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("articleComments"));
     }
@@ -49,7 +49,7 @@ class ArticleControllerTest {
     public void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
         mvc.perform(get("/articles/search"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(model().attributeExists("articles/search"));
     }
 
@@ -59,7 +59,7 @@ class ArticleControllerTest {
     public void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {
         mvc.perform(get("/articles/search-hashtag"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.TEXT_HTML))
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(model().attributeExists("articles/search-hashtag"));
     }
 }
