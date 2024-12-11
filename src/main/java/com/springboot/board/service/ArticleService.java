@@ -58,19 +58,22 @@ public class ArticleService {
         }catch(EntityNotFoundException e){
             log.warn("게시글 업데이트 실패. 게시글 없음 - dto: {}",dto);
         }
-
     }
 
     public void deleteArticle(Long articleId) {
         articleRepository.deleteById(articleId);
     }
 
+    @Transactional(readOnly = true)
     public Page<ArticleDto> searchArticlesViaHashtag(String hashtag, Pageable pageable) {
-        return null;
+        if(hashtag == null || hashtag.isEmpty()) {
+            return Page.empty(pageable);
+        }
+        return articleRepository.findByHashtag(hashtag, pageable).map(ArticleDto::from);
     }
 
     public List<String> getHashtags() {
-        return null;
+        return articleRepository.findAllDistinctHashtags();
     }
 
 }

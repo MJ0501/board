@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
@@ -137,8 +138,7 @@ class ArticleServiceTest {
         then(articleRepository).should().getReferenceById(dto.id());
     }
 
-    @Disabled
-    @DisplayName("4. SearchKeyword X & SearchingHashTag -> EmptyPage ")
+    @DisplayName("4. SearchKeyword X & SearchingHashTag -> EmptyPage")
     @Test
     void givenNoSearchKeyword_whenSearchingArticlesViaHashtag_thenReturnsEmptyPage() {
         Pageable pageable = Pageable.ofSize(20);
@@ -148,7 +148,7 @@ class ArticleServiceTest {
         assertThat(articles).isEqualTo(Page.empty(pageable));
         then(articleRepository).shouldHaveNoInteractions();
     }
-    @Disabled
+
     @DisplayName("4. Hashtag -> ArticlesPage")
     @Test
     void givenHashtag_whenSuccessSearching_thenReturnsArticlesPage() {
@@ -162,7 +162,20 @@ class ArticleServiceTest {
         then(articleRepository).should().findByHashtag(hashtag, pageable);
     }
 
+    @DisplayName("4. Hashtag조회 -> 존재하는 HashTags 보여줌 ")
+    @Test
+    void givenNothing_whenCalling_thenReturnsHashtags() {
+        // Given
+        List<String> expectedHashtags = List.of("#java", "#spring", "#boot");
+        given(articleRepository.findAllDistinctHashtags()).willReturn(expectedHashtags);
 
+        // When
+        List<String> actualHashtags = sut.getHashtags();
+
+        // Then
+        assertThat(actualHashtags).isEqualTo(expectedHashtags);
+        then(articleRepository).should().findAllDistinctHashtags();
+    }
 
 
     private Article createArticle() {
