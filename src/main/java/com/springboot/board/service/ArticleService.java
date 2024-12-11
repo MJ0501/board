@@ -1,11 +1,13 @@
 package com.springboot.board.service;
 
+import com.springboot.board.domain.Article;
 import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleDto;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.repository.ArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 @Service
@@ -47,6 +49,15 @@ public class ArticleService {
     }
 
     public void updateArticle(ArticleDto dto) {
+        try{
+            Article article = articleRepository.getReferenceById(dto.id());
+            if(dto.title() != null) {article.setTitle(dto.title());}
+            if(dto.content() != null) {article.setContent(dto.content());}
+            article.setHashtag(dto.hashtag());
+            articleRepository.save(article);
+        }catch(EntityNotFoundException e){
+            log.warn("게시글 업데이트 실패. 게시글 없음 - dto: {}",dto);
+        }
 
     }
 
