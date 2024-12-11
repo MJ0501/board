@@ -2,6 +2,7 @@ package com.springboot.board.repository;
 import com.springboot.board.domain.Article;
 import com.springboot.board.domain.QArticle;
 import com.springboot.board.dto.ArticleDto;
+import com.springboot.board.repository.querydsl.ArticleRepositoryCustom;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,7 @@ import com.querydsl.core.types.dsl.StringExpression;
 import java.nio.channels.FileChannel;
 
 @RepositoryRestResource
-public interface ArticleRepository extends JpaRepository<Article, Long>,
+public interface ArticleRepository extends JpaRepository<Article, Long>, ArticleRepositoryCustom,
         QuerydslPredicateExecutor<Article>, QuerydslBinderCustomizer<QArticle> {
 
     @Override
