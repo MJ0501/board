@@ -27,8 +27,8 @@ class ArticleServiceTest {
     @InjectMocks private ArticleService sut;
     @Mock private ArticleRepository articleRepository;
 
-    /////* Search */
-    @DisplayName("SearchKeyword X -> ArticlePage")
+    /////* Search Article */
+    @DisplayName("1. SearchKeyword X -> ArticlePage")
     @Test
     void givenNoSearchKeyword_whenSearchingArticles_thenReturnsArticlePage() {
         Pageable pageable = Pageable.ofSize(20);
@@ -40,7 +40,7 @@ class ArticleServiceTest {
         then(articleRepository).should().findAll(pageable);
     }
 
-    @DisplayName("SearchKeyword -> ArticlePage")
+    @DisplayName("1. SearchKeyword -> ArticlePage")
     @Test
     void givenSearchKeyword_whenSuccessSearching_thenReturnArticlePage(){
         SearchType searchType = SearchType.TITLE;
@@ -54,7 +54,21 @@ class ArticleServiceTest {
         then(articleRepository).should().findByTitleContaining(searchKeyword, pageable);
     }
 
-    @DisplayName("article 단건조회")
+    // 게시글이 없는 경우
+    @DisplayName("1. 없는 게시글 조회 -> ThrowsException")
+    @Test
+    void givenNonexistentArticleId_whenSearchingArticle_thenThrowsException() {
+        Long articleId = 0L;
+        given(articleRepository.findById(articleId)).willReturn(Optional.empty());
+        // When
+        Throwable t = catchThrowable(() -> sut.getArticle(articleId));
+        // Then
+        assertThat(t)
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("게시글이 없습니다 - articleId: " + articleId);
+        then(articleRepository).should().findById(articleId);
+    }
+    @DisplayName("1. article 단건조회")
     @Test
     void givenArticleId_whenSearchingArticle_thenReturnsArticle() {
         Long articleId = 1L;
@@ -69,48 +83,9 @@ class ArticleServiceTest {
                 .hasFieldOrPropertyWithValue("hashtag", article.getHashtag());
         then(articleRepository).should().findById(articleId);
     }
-    // 게시글이 없는 경우
-    @DisplayName("없는 게시글 조회 -> ThrowsException")
-    @Test
-    void givenNonexistentArticleId_whenSearchingArticle_thenThrowsException() {
-        Long articleId = 0L;
-        given(articleRepository.findById(articleId)).willReturn(Optional.empty());
-        // When
-        Throwable t = catchThrowable(() -> sut.getArticle(articleId));
-        // Then
-        assertThat(t)
-                .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("게시글이 없습니다 - articleId: " + articleId);
-        then(articleRepository).should().findById(articleId);
-    }
-
-    @DisplayName("SearchKeyword X & SearchingHashTag -> EmptyPage ")
-    @Test
-    void givenNoSearchKeyword_whenSearchingArticlesViaHashtag_thenReturnsEmptyPage() {
-        Pageable pageable = Pageable.ofSize(20);
-        // When
-        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(null, pageable);
-        // Then
-        assertThat(articles).isEqualTo(Page.empty(pageable));
-        then(articleRepository).shouldHaveNoInteractions();
-    }
-
-    @DisplayName("Hashtag -> ArticlesPage")
-    @Test
-    void givenHashtag_whenSuccessSearching_thenReturnsArticlesPage() {
-        String hashtag = "#java";
-        Pageable pageable = Pageable.ofSize(20);
-        given(articleRepository.findByHashtag(hashtag, pageable)).willReturn(Page.empty(pageable));
-        // When
-        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(hashtag, pageable);
-        // Then
-        assertThat(articles).isEqualTo(Page.empty(pageable));
-        then(articleRepository).should().findByHashtag(hashtag, pageable);
-    }
-
 
     /////* CREATE */
-    @DisplayName("ArticleInfo -> Create Article")
+    @DisplayName("2. ArticleInfo -> Create Article")
     @Test
     void givenArticleInfo_whenSuccessSaving_thenSavesArticle(){
         ArticleDto dto = createArticleDto();
@@ -119,6 +94,18 @@ class ArticleServiceTest {
         sut.saveArticle(dto);
         //then
         then(articleRepository).should().save(any(Article.class));
+    }
+
+    /////* DELETE */
+    @DisplayName("2. ArticleID -> Delete Article")
+    @Test
+    void givenArticleId_thenDeletesArticle(){
+        Long articleId = 1L;
+        willDoNothing().given(articleRepository).deleteById(articleId);
+        //when
+        sut.deleteArticle(1L);
+        //then
+        then(articleRepository).should().deleteById(articleId);
     }
 
     /////* UPDATE */
@@ -148,17 +135,32 @@ class ArticleServiceTest {
         then(articleRepository).should().getReferenceById(dto.id());
     }
 
-    /////* DELETE */
-    @DisplayName("ArticleID -> Delete Article")
+    @DisplayName("SearchKeyword X & SearchingHashTag -> EmptyPage ")
     @Test
-    void givenArticleId_thenDeletesArticle(){
-        Long articleId = 1L;
-        willDoNothing().given(articleRepository).deleteById(articleId);
-        //when
-        sut.deleteArticle(1L);
-        //then
-        then(articleRepository).should().deleteById(articleId);
+    void givenNoSearchKeyword_whenSearchingArticlesViaHashtag_thenReturnsEmptyPage() {
+        Pageable pageable = Pageable.ofSize(20);
+        // When
+        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(null, pageable);
+        // Then
+        assertThat(articles).isEqualTo(Page.empty(pageable));
+        then(articleRepository).shouldHaveNoInteractions();
     }
+
+    @DisplayName("Hashtag -> ArticlesPage")
+    @Test
+    void givenHashtag_whenSuccessSearching_thenReturnsArticlesPage() {
+        String hashtag = "#java";
+        Pageable pageable = Pageable.ofSize(20);
+        given(articleRepository.findByHashtag(hashtag, pageable)).willReturn(Page.empty(pageable));
+        // When
+        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(hashtag, pageable);
+        // Then
+        assertThat(articles).isEqualTo(Page.empty(pageable));
+        then(articleRepository).should().findByHashtag(hashtag, pageable);
+    }
+
+
+
 
     private Article createArticle() {
         return Article.of(createUserAccount(), "title","content","#java");
