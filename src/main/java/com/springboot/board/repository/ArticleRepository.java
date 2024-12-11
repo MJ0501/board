@@ -1,6 +1,9 @@
 package com.springboot.board.repository;
 import com.springboot.board.domain.Article;
 import com.springboot.board.domain.QArticle;
+import com.springboot.board.dto.ArticleDto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -12,6 +15,9 @@ import com.querydsl.core.types.dsl.StringExpression;
 @RepositoryRestResource
 public interface ArticleRepository extends JpaRepository<Article, Long>,
         QuerydslPredicateExecutor<Article>, QuerydslBinderCustomizer<QArticle> {
+
+    Page<Article> findByTitle(String title, Pageable pageable);
+
     @Override
     default void customize(QuerydslBindings bindings, QArticle root){
         bindings.excludeUnlistedProperties(true);
@@ -22,4 +28,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long>,
         bindings.bind(root.createdAt).first(DateTimeExpression::eq);
         bindings.bind(root.createdBy).first(StringExpression::containsIgnoreCase);
     }
+
+    Page<ArticleDto> findByHashtag(String hashtag, Pageable pageable);
 }

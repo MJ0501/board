@@ -28,16 +28,13 @@ public class Article extends AuditingFields{
     private Long id;
 
 
-    @Setter @ManyToOne(optional = false) private UserAccount userAccount;
+    @Setter @ManyToOne(optional = false)
+//   @JoinColumn(name="userId")
+    private UserAccount userAccount;
 
-    @Setter @Column(nullable = false)
-    private String title;
-
-    @Setter @Column(nullable = false, length = 10000)
-    private String content;
-
-    @Setter
-    private String hashtag;
+    @Setter @Column(nullable = false) private String title;
+    @Setter @Column(nullable = false, length = 10000) private String content;
+    @Setter private String hashtag;
 
     @ToString.Exclude
     @OrderBy("createdAt DESC")
@@ -55,18 +52,11 @@ public class Article extends AuditingFields{
         return new Article(userAccount,title,content, hashtag);
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (o == null || getClass() != o.getClass()) return false;
-//        Article article = (Article) o;
-//        return Objects.equals(id, article.id);
-//    }
-//
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if(!(o instanceof Article article)) return false;
-        return id != null && id.equals(article.id);
+        if(!(o instanceof Article that)) return false;
+        return id != null && id.equals(that.getId());
     }
 
     @Override
