@@ -43,13 +43,15 @@ public class ArticleService {
     }
 
     public void saveArticle(ArticleDto dto) {
-
+        articleRepository.save(dto.toEntity());
     }
 
     public void updateArticle(ArticleDto dto) {
+
     }
 
-    public void deleteArticle(long articleId) {
+    public void deleteArticle(Long articleId) {
+        articleRepository.deleteById(articleId);
     }
 
     public Page<ArticleDto> searchArticlesViaHashtag(String hashtag, Pageable pageable) {
