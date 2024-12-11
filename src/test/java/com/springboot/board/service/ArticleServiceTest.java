@@ -4,6 +4,7 @@ import com.springboot.board.domain.Article;
 import com.springboot.board.domain.UserAccount;
 import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleDto;
+import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.repository.ArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -39,7 +40,37 @@ class ArticleServiceTest {
         then(articleRepository).should().findAll(pageable);
     }
 
-    @DisplayName(" ArticleID X -> ThrowsException")
+    @DisplayName("SearchKeyword -> ArticlePage")
+    @Test
+    void givenSearchKeyword_whenSuccessSearching_thenReturnArticlePage(){
+        SearchType searchType = SearchType.TITLE;
+        String searchKeyword = "title";
+        Pageable pageable = Pageable.ofSize(20);
+        given(articleRepository.findByTitleContaining(searchKeyword, pageable)).willReturn(Page.empty());
+        //when
+        Page<ArticleDto> articles = sut.searchArticles(searchType, searchKeyword, pageable);
+        //then
+        assertThat(articles).isEmpty();
+        then(articleRepository).should().findByTitleContaining(searchKeyword, pageable);
+    }
+
+    @DisplayName("article 단건조회")
+    @Test
+    void givenArticleId_whenSearchingArticle_thenReturnsArticle() {
+        Long articleId = 1L;
+        Article article = createArticle();
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
+        // When
+        ArticleWithCommentsDto dto = sut.getArticle(articleId);
+        // Then
+        assertThat(dto)
+                .hasFieldOrPropertyWithValue("title", article.getTitle())
+                .hasFieldOrPropertyWithValue("content", article.getContent())
+                .hasFieldOrPropertyWithValue("hashtag", article.getHashtag());
+        then(articleRepository).should().findById(articleId);
+    }
+    // 게시글이 없는 경우
+    @DisplayName("없는 게시글 조회 -> ThrowsException")
     @Test
     void givenNonexistentArticleId_whenSearchingArticle_thenThrowsException() {
         Long articleId = 0L;
@@ -64,20 +95,6 @@ class ArticleServiceTest {
         then(articleRepository).shouldHaveNoInteractions();
     }
 
-    @DisplayName("SearchKeyword -> ArticlePage")
-    @Test
-    void givenSearchKeyword_whenSuccessSearching_thenReturnArticlePage(){
-        SearchType searchType = SearchType.TITLE;
-        String searchKeyword = "title";
-        Pageable pageable = Pageable.ofSize(20);
-        given(articleRepository.findByTitle(searchKeyword, pageable)).willReturn(Page.empty());
-        //when
-        Page<ArticleDto> articles = sut.searchArticles(searchType, searchKeyword, pageable);
-        //then
-       assertThat(articles).isEmpty();
-       then(articleRepository).should().findByTitle(searchKeyword, pageable);
-    }
-
     @DisplayName("Hashtag -> ArticlesPage")
     @Test
     void givenHashtag_whenSuccessSearching_thenReturnsArticlesPage() {
@@ -90,6 +107,7 @@ class ArticleServiceTest {
         assertThat(articles).isEqualTo(Page.empty(pageable));
         then(articleRepository).should().findByHashtag(hashtag, pageable);
     }
+
 
     /////* CREATE */
     @DisplayName("ArticleInfo -> Create Article")
