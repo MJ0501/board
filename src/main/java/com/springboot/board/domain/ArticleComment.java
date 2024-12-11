@@ -35,8 +35,6 @@ public class ArticleComment extends AuditingFields{
     @Setter @Column(nullable = false,length = 500)
     private String content;
 
-    protected ArticleComment() {}
-
     private ArticleComment(Article article, UserAccount userAccount, String content) {
         this.article = article;
         this.userAccount = userAccount;
