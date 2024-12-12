@@ -19,11 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
-
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
@@ -40,7 +38,7 @@ class ArticleControllerTest {
     @MockBean private ArticleService articleService;
     @MockBean private PaginationService paginationService;
 
-    public ArticleControllerTest(@Autowired MockMvc mvc){
+    ArticleControllerTest(@Autowired MockMvc mvc){
         this.mvc = mvc;
     }
 
@@ -58,7 +56,7 @@ class ArticleControllerTest {
 
     @DisplayName("[GET]/articles/index")
     @Test
-    public void givenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
+    void givenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
         given(articleService.searchArticles(eq(null), eq(null), any(Pageable.class))).willReturn(Page.empty());
         given(paginationService.getPagingBarNumbers(anyInt(),anyInt())).willReturn(List.of(0,1,2,3,4));
 
@@ -101,7 +99,7 @@ class ArticleControllerTest {
 
     @DisplayName("[GET]/articles/detail")
     @Test
-    public void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
+    void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         Long articleId = 1L;
         given(articleService.getArticle(articleId)).willReturn(createArticleWithCommentsDto());
 
@@ -117,7 +115,7 @@ class ArticleControllerTest {
     @Disabled
     @DisplayName("[GET]/articles/search")
     @Test
-    public void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
+    void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
         mvc.perform(get("/articles/search"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
@@ -127,7 +125,7 @@ class ArticleControllerTest {
     @Disabled
     @DisplayName("[GET]/articles/search-hashtag")
     @Test
-    public void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {
+    void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {
         List<String> hashtags = List.of("#java","#spring","#boot","#C","#python","#C++");
         given(articleService.searchArticlesViaHashtag(eq(null),any(Pageable.class))).willReturn(Page.empty());
         given(articleService.getHashtags()).willReturn(hashtags);
