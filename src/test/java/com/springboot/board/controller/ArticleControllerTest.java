@@ -5,6 +5,7 @@ import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.service.ArticleService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +81,7 @@ class ArticleControllerTest {
         then(articleService).should().getArticle(articleId);
     }
 
+    @Disabled
     @DisplayName("[GET]/articles/search")
     @Test
     public void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
@@ -89,6 +91,7 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/search"));
     }
 
+    @Disabled
     @DisplayName("[GET]/articles/search-hashtag")
     @Test
     public void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {

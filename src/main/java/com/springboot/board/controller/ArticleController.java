@@ -31,6 +31,7 @@ public class ArticleController {
                 articleService.searchArticles(searchType, searchValue, pageable).map(ArticleResponse::from));
         return "articles/index";
     }
+
     @GetMapping("/{articleId}")
     public String article(@PathVariable Long articleId, ModelMap map) {
         ArticleWithCommentsResponse articleWithComments = ArticleWithCommentsResponse.from(articleService.getArticle(articleId));
@@ -38,11 +39,11 @@ public class ArticleController {
         map.addAttribute("articleComments", articleWithComments.articleCommentsResponse());
         return "articles/detail";
     }
+
     @GetMapping("/search-hashtag")
     public String searchHashtag(@RequestParam(required = false) String searchValue,
                                 @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                 ModelMap map) {
-        //TODO: search-hashtag view controller
         return "articles/search-hashtag";
     }
 }
