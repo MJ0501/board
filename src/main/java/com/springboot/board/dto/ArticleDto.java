@@ -1,7 +1,6 @@
 package com.springboot.board.dto;
 
 import com.springboot.board.domain.Article;
-
 import java.time.LocalDateTime;
 
 public record ArticleDto(

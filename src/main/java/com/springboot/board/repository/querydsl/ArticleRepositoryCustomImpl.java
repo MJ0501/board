@@ -3,7 +3,6 @@ package com.springboot.board.repository.querydsl;
 import com.springboot.board.domain.Article;
 import com.springboot.board.domain.QArticle;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
-
 import java.util.List;
 
 public class ArticleRepositoryCustomImpl extends QuerydslRepositorySupport implements ArticleRepositoryCustom {

@@ -1,7 +1,6 @@
 package com.springboot.board.dto;
 
 import com.springboot.board.domain.Article;
-
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.Set;

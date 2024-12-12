@@ -3,14 +3,12 @@ package com.springboot.board.repository;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import com.springboot.board.domain.ArticleComment;
-import com.springboot.board.domain.QArticle;
 import com.springboot.board.domain.QArticleComment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
-
 import java.util.List;
 
 @RepositoryRestResource

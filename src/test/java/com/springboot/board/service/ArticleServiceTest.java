@@ -8,7 +8,6 @@ import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.repository.ArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

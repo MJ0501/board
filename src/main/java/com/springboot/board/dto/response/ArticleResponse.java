@@ -1,8 +1,6 @@
 package com.springboot.board.dto.response;
 
-import com.springboot.board.domain.Article;
 import com.springboot.board.dto.ArticleDto;
-
 import java.time.LocalDateTime;
 
 public record ArticleResponse(

@@ -1,7 +1,6 @@
 package com.springboot.board.dto.response;
 
 import com.springboot.board.dto.ArticleCommentDto;
-
 import java.time.LocalDateTime;
 
 public record ArticleCommentsResponse(

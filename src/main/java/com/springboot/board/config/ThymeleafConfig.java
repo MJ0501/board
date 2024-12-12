@@ -1,8 +1,6 @@
 package com.springboot.board.config;
 
-import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.thymeleaf.spring6.templateresolver.SpringResourceTemplateResolver;
@@ -15,7 +13,6 @@ public class ThymeleafConfig {
             Thymeleaf3Properties thymeleaf3Properties
     ) {
         defaultTemplateResolver.setUseDecoupledLogic(thymeleaf3Properties.decoupledLogic());
-
         return defaultTemplateResolver;
     }
 

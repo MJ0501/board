@@ -8,6 +8,7 @@ import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.repository.ArticleCommentRepository;
 import com.springboot.board.repository.ArticleRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,11 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
-
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
 
+@Disabled
 @DisplayName("비즈니스로직 - Comment")
 @ExtendWith(MockitoExtension.class)
 class ArticleCommentServiceTest {

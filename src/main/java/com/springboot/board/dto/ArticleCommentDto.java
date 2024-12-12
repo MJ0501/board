@@ -3,9 +3,7 @@ package com.springboot.board.dto;
 
 import com.springboot.board.domain.Article;
 import com.springboot.board.domain.ArticleComment;
-
 import java.time.LocalDateTime;
-import java.util.Set;
 
 public record ArticleCommentDto(
         Long id,
