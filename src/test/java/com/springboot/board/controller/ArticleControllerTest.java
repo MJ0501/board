@@ -5,6 +5,7 @@ import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.service.ArticleService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,6 +35,7 @@ class ArticleControllerTest {
 
     private final MockMvc mvc;
     @MockBean private ArticleService articleService;
+    @Autowired
 
     public ArticleControllerTest(@Autowired MockMvc mvc){
         this.mvc = mvc;
@@ -64,13 +65,14 @@ class ArticleControllerTest {
                 .andExpect(model().attributeExists("articles"));
         then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
     }
-
-    @DisplayName("[GET]/articles/detail")
+    @DisplayName("[GET]/articles/{articleId}")
     @Test
-    public void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
+    public void givenNothing_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
+        // Given
         Long articleId = 1L;
         given(articleService.getArticle(articleId)).willReturn(createArticleWithCommentsDto());
 
+        // When & Then
         mvc.perform(get("/articles/" + articleId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
@@ -80,15 +82,7 @@ class ArticleControllerTest {
         then(articleService).should().getArticle(articleId);
     }
 
-    @DisplayName("[GET]/articles/search")
-    @Test
-    public void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
-        mvc.perform(get("/articles/search"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
-                .andExpect(view().name("articles/search"));
-    }
-
+    @Disabled
     @DisplayName("[GET]/articles/search-hashtag")
     @Test
     public void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {

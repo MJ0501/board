@@ -42,7 +42,6 @@ public class ArticleController {
     public String searchHashtag(@RequestParam(required = false) String searchValue,
                                 @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
                                 ModelMap map) {
-        //TODO: search-hashtag view controller
         return "articles/search-hashtag";
     }
 }
