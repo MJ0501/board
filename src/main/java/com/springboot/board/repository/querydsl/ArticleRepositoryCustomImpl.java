@@ -14,6 +14,10 @@ public class ArticleRepositoryCustomImpl extends QuerydslRepositorySupport imple
     @Override
     public List<String> findAllDistinctHashtags() {
         QArticle article = QArticle.article;
+        /*
+        * JPQLQuery<String> query = from(article).distinct().select(article.hashtag) JPQLQuery<String>.where(article.hashtag.isNotNull());
+        * return query.fetch();
+        * */
         return from(article).distinct().select(article.hashtag)
                 .where(article.hashtag.isNotNull()).fetch();
     }
