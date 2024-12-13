@@ -42,18 +42,6 @@ class ArticleControllerTest {
         this.mvc = mvc;
     }
 
-//  loginPage 는 SpringSecurity 제공하는 기본 page로 사
-//    @DisplayName("GET/로그인 페이지")
-//    @Test
-//    public void givenNothing_whenTryingToLogIn_thenReturnsLogInView() throws Exception {
-//        // Given
-//
-//        // When & Then
-//        mvc.perform(get("/login"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
-//    }
-
     @DisplayName("[GET]/articles/index")
     @Test
     void givenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
@@ -70,24 +58,23 @@ class ArticleControllerTest {
         then(paginationService).should().getPagingBarNumbers(anyInt(), anyInt());
     }
 
-    @DisplayName("[ 페이징, 정렬 기능 | /articles/index")
+    @DisplayName("[Pagination, Sort] /articles/index")
     @Test
-    void givenPagingAndSortingParams_whenSearchingArticlesPage_thenReturnsArticlesPage() throws Exception {
-        // Given
+    void givenPagingAndSortingParams_whenSearchingArticlesPage_thenReturnsArticlesView() throws Exception {
         String sortName = "title";
         String direction = "desc";
         int pageNumber = 0;
         int pageSize = 5;
+
         Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Order.desc(sortName)));
         List<Integer> barNumbers = List.of(1, 2, 3, 4, 5);
+
         given(articleService.searchArticles(null, null, pageable)).willReturn(Page.empty());
         given(paginationService.getPagingBarNumbers(pageable.getPageNumber(), Page.empty().getTotalPages())).willReturn(barNumbers);
-
         // When & Then
         mvc.perform(get("/articles").queryParam("page", String.valueOf(pageNumber))
                     .queryParam("size", String.valueOf(pageSize))
-                    .queryParam("sort", sortName + "," + direction)
-                )
+                    .queryParam("sort", sortName + "," + direction))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/index"))
@@ -112,8 +99,29 @@ class ArticleControllerTest {
         then(articleService).should().getArticle(articleId);
     }
 
+    @DisplayName("[SearchKeyword] /articles/index")
+    @Test
+    public void givenSearchKeyword_whenSearchingArticlesView_thenReturnsArticlesView() throws Exception {
+        SearchType searchType = SearchType.TITLE;
+        String searchValue = "title";
+
+        given(articleService.searchArticles(eq(searchType), eq(searchValue), any(Pageable.class))).willReturn(Page.empty());
+        given(paginationService.getPagingBarNumbers(anyInt(), anyInt())).willReturn(List.of(0, 1, 2, 3, 4));
+        // When & Then
+        mvc.perform(get("/articles")
+                    .queryParam("searchType", searchType.name())
+                    .queryParam("searchValue", searchValue))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
+                .andExpect(view().name("articles/index"))
+                .andExpect(model().attributeExists("articles"))
+                .andExpect(model().attributeExists("searchTypes"));
+        then(articleService).should().searchArticles(eq(searchType), eq(searchValue), any(Pageable.class));
+        then(paginationService).should().getPagingBarNumbers(anyInt(), anyInt());
+    }
+
     @Disabled
-    @DisplayName("[GET]/articles/search")
+    @DisplayName("[GET]/articles ")
     @Test
     void whenRequestingArticleSearchView_thenReturnsArticleSearchView() throws Exception {
         mvc.perform(get("/articles/search"))
@@ -127,6 +135,7 @@ class ArticleControllerTest {
     @Test
     void whenRequestingArticleHashTagSearchView_thenReturnsArticleHashTagSearchView() throws Exception {
         List<String> hashtags = List.of("#java","#spring","#boot","#C","#python","#C++");
+
         given(articleService.searchArticlesViaHashtag(eq(null),any(Pageable.class))).willReturn(Page.empty());
         given(articleService.getHashtags()).willReturn(hashtags);
 
