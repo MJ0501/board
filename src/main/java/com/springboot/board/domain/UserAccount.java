@@ -1,27 +1,22 @@
 package com.springboot.board.domain;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
+
 import java.util.Objects;
 
 @Getter
 @ToString
 @Table(indexes = {
-        @Index(columnList = "userId", unique = true),
         @Index(columnList = "email", unique = true),
         @Index(columnList = "createdAt"),
         @Index(columnList = "createdBy")
 })
 @Entity
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAccount extends AuditingFields{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Setter
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String userId;
 
     @Setter
@@ -38,8 +33,6 @@ public class UserAccount extends AuditingFields{
 
     @Setter
     private String memo;
-
-    protected UserAccount() {}
 
     private UserAccount(String userId, String userPassword, String email, String nickname, String memo) {
         this.userId = userId;

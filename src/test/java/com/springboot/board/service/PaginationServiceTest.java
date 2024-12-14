@@ -24,7 +24,7 @@ class PaginationServiceTest {
     @DisplayName("현재페이지, total pages 로 PagingBarList 생성")
     @MethodSource
     @ParameterizedTest(name = "[{index}] {0}, {1} => {2}")
-     void givenCurrentPageNAndTotalPages_thenReturnPagingBarNumbers(int currentPage, int totalPages, List<Integer> expected) {
+    void givenCurrentPageNAndTotalPages_thenReturnPagingBarNumbers(int currentPage, int totalPages, List<Integer> expected) {
         List<Integer> actual = sut.getPagingBarNumbers(currentPage, totalPages);
         assertThat(actual).isEqualTo(expected);
     }
@@ -39,7 +39,7 @@ class PaginationServiceTest {
           arguments(12, 13, List.of(10,11,12))
         );
     }
-    @DisplayName("현재 설정되어 있는 페이지네이션 바의 길이를 알려준다.")
+    @DisplayName("현재 설정되어 있는 페이지네이션 바의 길이(steps)")
     @Test
     void givenNothing_whenCalling_thenReturnsCurrentBarLength() {
         int barLength = sut.currentBarLength();

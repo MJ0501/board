@@ -1,6 +1,7 @@
 package com.springboot.board.controller;
 
 import com.springboot.board.service.ArticleService;
+import com.springboot.board.service.PaginationService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @DisplayName("View 컨트롤러 - 인증")
-//@Import(TestSecurityConfig.class)
 @WebMvcTest(AuthControllerTest.EmptyController.class)
 class AuthControllerTest {
 
@@ -23,7 +23,8 @@ class AuthControllerTest {
 
     @MockBean
     private ArticleService articleService;
-//    @MockBean private PaginationService paginationService;
+    @MockBean
+    private PaginationService paginationService;
 
     AuthControllerTest(@Autowired MockMvc mvc) {
         this.mvc = mvc;
