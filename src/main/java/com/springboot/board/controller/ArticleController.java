@@ -1,6 +1,9 @@
 package com.springboot.board.controller;
 
+import com.springboot.board.domain.constant.FormStatus;
 import com.springboot.board.domain.constant.SearchType;
+import com.springboot.board.dto.UserAccountDto;
+import com.springboot.board.dto.request.ArticleRequest;
 import com.springboot.board.dto.response.ArticleResponse;
 import com.springboot.board.dto.response.ArticleWithCommentsResponse;
 import com.springboot.board.service.ArticleService;
@@ -12,10 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -25,6 +25,22 @@ public class ArticleController {
     private final ArticleService articleService;
     private final PaginationService paginationService;
 
+    /* Article CRUD */
+    // Create Article
+    @GetMapping("/form")
+    public String createArticleForm(ModelMap map){
+        map.addAttribute("formStatus", FormStatus.CREATE);
+        return "articles/form";
+    }
+
+    @PostMapping("/form")
+    public String saveArticle(ArticleRequest articleRequest){
+        //TODO 인증 구현하면 인증 정보 넘기기
+        articleService.saveArticle(articleRequest.toDto(UserAccountDto.of(
+                "MJ","m0501","MJ@mail.com","MJ","임시접근관리자")));
+        return "redirect:/articles";
+    }
+    // Read
     @GetMapping
     public String articles(
             @RequestParam(required = false) SearchType searchType,
@@ -42,16 +58,43 @@ public class ArticleController {
 
     @GetMapping("/{articleId}")
     public String article(@PathVariable Long articleId, ModelMap map) {
-        ArticleWithCommentsResponse articleWithComments = ArticleWithCommentsResponse.from(articleService.getArticle(articleId));
+        ArticleWithCommentsResponse articleWithComments = ArticleWithCommentsResponse.from(articleService.getArticleWithComments(articleId));
         map.addAttribute("article", articleWithComments);
         map.addAttribute("articleComments", articleWithComments.articleCommentsResponse());
+        map.addAttribute("totalCount", articleService.getArticleCount());
         return "articles/detail";
     }
 
+    // Update Article
+    @GetMapping("/{articleId}/form")
+    public String updateArticleForm(@PathVariable Long articleId, ModelMap map){
+        ArticleResponse article = ArticleResponse.from(articleService.getArticle(articleId));
+        map.addAttribute("article",article);
+        map.addAttribute("formStatus", FormStatus.UPDATE);
+        return "articles/form";
+    }
+
+    @PostMapping("/{articleId}/form")
+    public String updateArticle(@PathVariable Long articleId, ArticleRequest request){
+        //TODO 인증 구현하면, 인증정보 넣기
+        articleService.updateArticle(articleId,request.toDto(UserAccountDto.of(
+                "MJ","m0501","MJ@mail.com","MJ","임시접근관리자")));
+        return "redirect:/articles/"+articleId;
+    }
+
+    // Delete Article
+    @PostMapping("/{articleId}/delete")
+    public String deleteArticle(@PathVariable Long articleId){
+        //TODO 인증 구현하면, 인증정보 넣기
+        articleService.deleteArticle(articleId);
+        return "redirect:/articles";
+    }
+
+    /* Search */
     @GetMapping("/search-hashtag")
-    public String searchHashtag(@RequestParam(required = false) String searchValue,
-                                @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
-                                ModelMap map) {
+    public String searchArticleHashtag(@RequestParam(required = false) String searchValue,
+                                       @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
+                                       ModelMap map) {
         Page<ArticleResponse> articles = articleService.searchArticlesViaHashtag(searchValue, pageable).map(ArticleResponse::from);
         List<Integer> barNumbers = paginationService.getPagingBarNumbers(pageable.getPageNumber(), articles.getTotalPages());
         List<String> hashtags = articleService.getHashtags();
