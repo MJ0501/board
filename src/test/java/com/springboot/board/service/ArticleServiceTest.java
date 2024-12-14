@@ -7,6 +7,7 @@ import com.springboot.board.dto.ArticleDto;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.repository.ArticleRepository;
+import com.springboot.board.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,63 +22,53 @@ import java.util.List;
 import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
+import org.springframework.test.util.ReflectionTestUtils;
+
 
 @DisplayName("비즈니스로직 - Article")
 @ExtendWith(MockitoExtension.class)
 class ArticleServiceTest {
-    @InjectMocks private ArticleService sut;
-    @Mock private ArticleRepository articleRepository;
+    @InjectMocks
+    private ArticleService sut;
+    @Mock
+    private ArticleRepository articleRepository;
+    @Mock
+    private UserAccountRepository userAccountRepository;
 
-    /////* Search Article */
-    @DisplayName("1. SearchKeyword X -> ArticlePage")
+    /////* CREATE */
+    @DisplayName("2. ArticleInfo -> Create Article")
     @Test
-    void givenNoSearchKeyword_whenSearchingArticles_thenReturnsArticlePage() {
-        Pageable pageable = Pageable.ofSize(20);
-        given(articleRepository.findAll(pageable)).willReturn(Page.empty());
-        // When
-        Page<ArticleDto> articles = sut.searchArticles(null, null, pageable);
-        // Then
-        assertThat(articles).isEmpty();
-        then(articleRepository).should().findAll(pageable);
+    void givenArticleInfo_whenSuccessSaving_thenSavesArticle(){
+        ArticleDto dto = createArticleDto();
+        given(userAccountRepository.getReferenceById(dto.userAccountDto().userId())).willReturn(createUserAccount());
+        given(articleRepository.save(any(Article.class))).willReturn(createArticle());
+
+        sut.saveArticle(dto);
+        then(articleRepository).should().save(any(Article.class));
     }
 
-    @DisplayName("1. SearchKeyword -> ArticlePage")
-    @Test
-    void givenSearchKeyword_whenSuccessSearching_thenReturnArticlePage(){
-        SearchType searchType = SearchType.TITLE;
-        String searchKeyword = "title";
-        Pageable pageable = Pageable.ofSize(20);
-        given(articleRepository.findByTitleContaining(searchKeyword, pageable)).willReturn(Page.empty());
-        //when
-        Page<ArticleDto> articles = sut.searchArticles(searchType, searchKeyword, pageable);
-        //then
-        assertThat(articles).isEmpty();
-        then(articleRepository).should().findByTitleContaining(searchKeyword, pageable);
-    }
-
-    // 게시글이 없는 경우
+    /////* READ */
     @DisplayName("1. 없는 게시글 조회 -> ThrowsException")
     @Test
     void givenNonexistentArticleId_whenSearchingArticle_thenThrowsException() {
         Long articleId = 0L;
         given(articleRepository.findById(articleId)).willReturn(Optional.empty());
-        // When
         Throwable t = catchThrowable(() -> sut.getArticle(articleId));
-        // Then
+
         assertThat(t)
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessage("게시글이 없습니다 - articleId: " + articleId);
+                .hasMessage("게시글이 없습니다. articleId: " + articleId);
         then(articleRepository).should().findById(articleId);
     }
-    @DisplayName("1. article 단건조회")
+
+    @DisplayName("1.2 article detail + with Comments")
     @Test
-    void givenArticleId_whenSearchingArticle_thenReturnsArticle() {
+    void givenArticleId_whenSearchingArticle_thenReturnsArticleWithComments() {
         Long articleId = 1L;
         Article article = createArticle();
         given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
-        // When
-        ArticleWithCommentsDto dto = sut.getArticle(articleId);
-        // Then
+
+        ArticleWithCommentsDto dto = sut.getArticleWithComments(articleId);
         assertThat(dto)
                 .hasFieldOrPropertyWithValue("title", article.getTitle())
                 .hasFieldOrPropertyWithValue("content", article.getContent())
@@ -85,40 +76,28 @@ class ArticleServiceTest {
         then(articleRepository).should().findById(articleId);
     }
 
-    /////* CREATE */
-    @DisplayName("2. ArticleInfo -> Create Article")
+    @DisplayName("1.2 댓글 달린 게시글이 없으면, 예외를 던진다.")
     @Test
-    void givenArticleInfo_whenSuccessSaving_thenSavesArticle(){
-        ArticleDto dto = createArticleDto();
-        given(articleRepository.save(any(Article.class))).willReturn(createArticle());
-        //when
-        sut.saveArticle(dto);
-        //then
-        then(articleRepository).should().save(any(Article.class));
-    }
+    void givenNonexistentArticleId_whenSearchingArticleWithComments_thenThrowsException() {
+        Long articleId = 0L;
+        given(articleRepository.findById(articleId)).willReturn(Optional.empty());
 
-    /////* DELETE */
-    @DisplayName("2. ArticleID -> Delete Article")
-    @Test
-    void givenArticleId_thenDeletesArticle(){
-        Long articleId = 1L;
-        willDoNothing().given(articleRepository).deleteById(articleId);
-        //when
-        sut.deleteArticle(1L);
-        //then
-        then(articleRepository).should().deleteById(articleId);
+        Throwable t = catchThrowable(() -> sut.getArticleWithComments(articleId));
+        assertThat(t)
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("해당 게시글이 없습니다. articleId: " + articleId);
+        then(articleRepository).should().findById(articleId);
     }
 
     /////* UPDATE */
-    @DisplayName("3. ArticleInfo -> Update Article")
+    @DisplayName("ArticleInfo -> Update Article")
     @Test
     void givenArticleInfo_whenSavingArticle_thenUpdatesArticle(){
         Article article = createArticle();
         ArticleDto dto = createArticleDto("새 타이틀", "새 내용", "#springboot");
         given(articleRepository.getReferenceById(dto.id())).willReturn(article);
-        //when
-        sut.updateArticle(dto);
-        //then
+
+        sut.updateArticle(dto.id(), dto);
         assertThat(article)
                 .hasFieldOrPropertyWithValue("title", dto.title())
                 .hasFieldOrPropertyWithValue("content",dto.content())
@@ -126,59 +105,90 @@ class ArticleServiceTest {
         then(articleRepository).should().getReferenceById(dto.id());
     }
 
-    @DisplayName("3. 존재하지 않는 Article 수정시, ThrowException")
+    @DisplayName("존재하지 않는 Article 수정시, ThrowException")
     @Test
     void givenNonexistentArticleInfo_whenUpdatingArticle_thenLogsWarningAndDoesNothing() {
         ArticleDto dto = createArticleDto("새 타이틀", "새 내용", "#springboot");
         given(articleRepository.getReferenceById(dto.id())).willThrow(EntityNotFoundException.class);
-        // When
-        sut.updateArticle(dto);
-        // Then
+
+        sut.updateArticle(dto.id(), dto);
         then(articleRepository).should().getReferenceById(dto.id());
     }
 
-    @DisplayName("4. SearchKeyword X & SearchingHashTag -> EmptyPage")
+    /////* DELETE */
+    @DisplayName("ArticleID -> Delete Article")
+    @Test
+    void givenArticleId_thenDeletesArticle(){
+        Long articleId = 1L;
+        willDoNothing().given(articleRepository).deleteById(articleId);
+
+        sut.deleteArticle(1L);
+        then(articleRepository).should().deleteById(articleId);
+    }
+
+    /* Search & hashtag Search*/
+    @DisplayName("SearchKeyword X -> ArticlePage")
+    @Test
+    void givenNoSearchKeyword_whenSearchingArticles_thenReturnsArticlePage() {
+        Pageable pageable = Pageable.ofSize(20);
+        given(articleRepository.findAll(pageable)).willReturn(Page.empty());
+        Page<ArticleDto> articles = sut.searchArticles(null, null, pageable);
+
+        assertThat(articles).isEmpty();
+        then(articleRepository).should().findAll(pageable);
+    }
+
+    @DisplayName("SearchKeyword O -> ArticlePage")
+    @Test
+    void givenSearchKeyword_whenSuccessSearching_thenReturnArticlePage(){
+        SearchType searchType = SearchType.TITLE;
+        String searchKeyword = "title";
+        Pageable pageable = Pageable.ofSize(20);
+        given(articleRepository.findByTitleContaining(searchKeyword, pageable)).willReturn(Page.empty());
+
+        Page<ArticleDto> articles = sut.searchArticles(searchType, searchKeyword, pageable);
+        assertThat(articles).isEmpty();
+        then(articleRepository).should().findByTitleContaining(searchKeyword, pageable);
+    }
+
+    @DisplayName("SearchKeyword X & SearchingHashTag -> EmptyPage")
     @Test
     void givenNoSearchKeyword_whenSearchingArticlesViaHashtag_thenReturnsEmptyPage() {
         Pageable pageable = Pageable.ofSize(20);
-        // When
+
         Page<ArticleDto> articles = sut.searchArticlesViaHashtag(null, pageable);
-        // Then
         assertThat(articles).isEqualTo(Page.empty(pageable));
         then(articleRepository).shouldHaveNoInteractions();
     }
 
-    @DisplayName("4. Hashtag -> ArticlesPage")
+    @DisplayName("Searching hashtag -> ArticlesPage")
     @Test
     void givenHashtag_whenSuccessSearching_thenReturnsArticlesPage() {
         String hashtag = "#java";
         Pageable pageable = Pageable.ofSize(20);
         given(articleRepository.findByHashtag(hashtag, pageable)).willReturn(Page.empty(pageable));
-        // When
+
         Page<ArticleDto> articles = sut.searchArticlesViaHashtag(hashtag, pageable);
-        // Then
         assertThat(articles).isEqualTo(Page.empty(pageable));
         then(articleRepository).should().findByHashtag(hashtag, pageable);
     }
 
-    @DisplayName("4. Hashtag조회 -> 존재하는 HashTags 보여줌 ")
+    @DisplayName("Hashtag List -> 존재하는 HashTags")
     @Test
     void givenNothing_whenCalling_thenReturnsHashtags() {
-        // Given
         List<String> expectedHashtags = List.of("#java", "#spring", "#boot");
         given(articleRepository.findAllDistinctHashtags()).willReturn(expectedHashtags);
 
-        // When
         List<String> actualHashtags = sut.getHashtags();
-
-        // Then
         assertThat(actualHashtags).isEqualTo(expectedHashtags);
         then(articleRepository).should().findAllDistinctHashtags();
     }
 
 
     private Article createArticle() {
-        return Article.of(createUserAccount(), "title","content","#java");
+        Article article= Article.of(createUserAccount(), "title","content","#java");
+        ReflectionTestUtils.setField(article, "id",1L);
+        return article;
     }
 
     private UserAccount createUserAccount() {
@@ -188,11 +198,13 @@ class ArticleServiceTest {
     private ArticleDto createArticleDto() {
         return createArticleDto("title","content","#java");
     }
+
     private ArticleDto createArticleDto(String title, String content, String hashtag) {
         return ArticleDto.of(1L,createUserAccountDto(),title,content,hashtag, LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
     }
+
     private UserAccountDto createUserAccountDto() {
-        return UserAccountDto.of("MJ","pw","MJ@mail.com","MJ","mmeemmoo",LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
+        return UserAccountDto.of("MJ","m0501","MJ@mail.com","MJ","mmeemmoo",LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
     }
 
 }
