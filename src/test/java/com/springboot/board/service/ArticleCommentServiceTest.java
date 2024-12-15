@@ -7,6 +7,7 @@ import com.springboot.board.dto.ArticleCommentDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.repository.ArticleCommentRepository;
 import com.springboot.board.repository.ArticleRepository;
+import com.springboot.board.repository.UserAccountRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ class ArticleCommentServiceTest {
     @InjectMocks private ArticleCommentService sut;
     @Mock private ArticleRepository articleRepository;
     @Mock private ArticleCommentRepository articleCommentRepository;
+    @Mock private UserAccountRepository userAccountRepository;
 
     @DisplayName("ArticleID 조회 -> 댓글리스트반환")
     @Test
@@ -33,9 +35,8 @@ class ArticleCommentServiceTest {
         Long articleId = 1L;
         ArticleComment expected= createArticleComment("content");
         given(articleCommentRepository.findByArticle_Id(articleId)).willReturn(List.of(expected));
-        //when
+
         List<ArticleCommentDto> actual =  sut.searchArticleComments(articleId);
-        //then
         assertThat(actual).hasSize(1)
                 .first()
                 .hasFieldOrPropertyWithValue("content", expected.getContent());
@@ -47,11 +48,12 @@ class ArticleCommentServiceTest {
     void givenCommentInfo_whenSavingComment_thenReturnsComment(){
         ArticleCommentDto dto = createArticleCommentDto("댓글");
         given(articleRepository.getReferenceById(dto.articleId())).willReturn(createArticle());
+        given(userAccountRepository.getReferenceById(dto.userAccountDto().userId())).willReturn(createUserAccount());
         given(articleCommentRepository.save(any(ArticleComment.class))).willReturn(null);
-        //when
+
         sut.saveArticleComment(dto);
-        // Then
         then(articleRepository).should().getReferenceById(dto.articleId());
+        then(userAccountRepository).should().getReferenceById(dto.userAccountDto().userId());
         then(articleCommentRepository).should().save(any(ArticleComment.class));
     }
 
@@ -60,10 +62,10 @@ class ArticleCommentServiceTest {
     void givenNonexistentArticle_whenSavingArticleComment_thenLogsSituationAndDoesNothing() {
         ArticleCommentDto dto = createArticleCommentDto("댓글");
         given(articleRepository.getReferenceById(dto.articleId())).willThrow(EntityNotFoundException.class);
-        // When
+
         sut.saveArticleComment(dto);
-        // Then
         then(articleRepository).should().getReferenceById(dto.articleId());
+        then(userAccountRepository).shouldHaveNoInteractions();
         then(articleCommentRepository).shouldHaveNoInteractions();
     }
     
@@ -75,9 +77,8 @@ class ArticleCommentServiceTest {
         ArticleComment articleComment = createArticleComment(oldContent);
         ArticleCommentDto dto = createArticleCommentDto(updatedContent);
         given(articleCommentRepository.getReferenceById(dto.id())).willReturn(articleComment);
-        // When
+
         sut.updateArticleComment(dto);
-        // Then
         assertThat(articleComment.getContent())
                 .isNotEqualTo(oldContent)
                 .isEqualTo(updatedContent);
@@ -89,9 +90,8 @@ class ArticleCommentServiceTest {
     void givenNonexistentArticleComment_whenUpdatingArticleComment_thenLogsWarningAndDoesNothing() {
         ArticleCommentDto dto = createArticleCommentDto("댓글");
         given(articleCommentRepository.getReferenceById(dto.id())).willThrow(EntityNotFoundException.class);
-        // When
+
         sut.updateArticleComment(dto);
-        // Then
         then(articleCommentRepository).should().getReferenceById(dto.id());
     }
 
@@ -100,9 +100,8 @@ class ArticleCommentServiceTest {
     void givenArticleCommentId_whenDeletingArticleComment_thenDeletesArticleComment() {
         Long articleCommentId = 1L;
         willDoNothing().given(articleCommentRepository).deleteById(articleCommentId);
-        // When
+
         sut.deleteArticleComment(articleCommentId);
-        // Then
         then(articleCommentRepository).should().deleteById(articleCommentId);
     }
 
@@ -125,9 +124,4 @@ class ArticleCommentServiceTest {
     private ArticleCommentDto createArticleCommentDto(String content) {
         return ArticleCommentDto.of(1L,1L,createUserAccountDto(),content,LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
     }
-
-
-
-
-
 }
