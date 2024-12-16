@@ -96,6 +96,7 @@ class ArticleServiceTest {
         Article article = createArticle();
         ArticleDto dto = createArticleDto("새 타이틀", "새 내용", "#springboot");
         given(articleRepository.getReferenceById(dto.id())).willReturn(article);
+        given(userAccountRepository.getReferenceById(dto.userAccountDto().userId())).willReturn(dto.userAccountDto().toEntity());
 
         sut.updateArticle(dto.id(), dto);
         assertThat(article)
@@ -103,6 +104,7 @@ class ArticleServiceTest {
                 .hasFieldOrPropertyWithValue("content",dto.content())
                 .hasFieldOrPropertyWithValue("hashtag",dto.hashtag());
         then(articleRepository).should().getReferenceById(dto.id());
+        then(userAccountRepository).should().getReferenceById(dto.userAccountDto().userId());
     }
 
     @DisplayName("존재하지 않는 Article 수정시, ThrowException")
@@ -120,10 +122,11 @@ class ArticleServiceTest {
     @Test
     void givenArticleId_thenDeletesArticle(){
         Long articleId = 1L;
-        willDoNothing().given(articleRepository).deleteById(articleId);
+        String userId = "MJ";
+        willDoNothing().given(articleRepository).deleteByIdAndUserAccount_UserId(articleId,userId);
 
-        sut.deleteArticle(1L);
-        then(articleRepository).should().deleteById(articleId);
+        sut.deleteArticle(1L,userId);
+        then(articleRepository).should().deleteByIdAndUserAccount_UserId(articleId,userId);
     }
 
     /* Search & hashtag Search*/

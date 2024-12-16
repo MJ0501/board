@@ -1,6 +1,7 @@
 package com.springboot.board.controller;
 
 import com.springboot.board.config.SecurityConfig;
+import com.springboot.board.config.TestSecurityConfig;
 import com.springboot.board.domain.constant.FormStatus;
 import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleDto;
@@ -22,6 +23,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.TestExecutionEvent;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @DisplayName("컨트롤러View - Article")
-@Import({SecurityConfig.class, FormDataEncoder.class})
+@Import({TestSecurityConfig.class, FormDataEncoder.class})
 @WebMvcTest(ArticleController.class)
 class ArticleControllerTest {
 
@@ -50,6 +54,7 @@ class ArticleControllerTest {
     }
     /*===== Article CRUD =====*/
     /* CREATE article */
+    @WithMockUser
     @DisplayName("[GET]/article/form : CREATE new Article Formpage")
     @Test
     void whenRequestForm_thenReturnsCreateArticleFormPage() throws Exception {
@@ -61,6 +66,7 @@ class ArticleControllerTest {
     }
 
     @DisplayName("[POST/articles : Save new Article")
+    @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Test
     void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
         ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
@@ -94,24 +100,51 @@ class ArticleControllerTest {
         then(paginationService).should().getPagingBarNumbers(anyInt(), anyInt());
     }
 
-    @DisplayName("[GET]/articles/detail : + with comments")
+    @DisplayName("[GET]/articles/detail : + with comments, + 인증O")
+    @WithMockUser
     @Test
     void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         Long articleId = 1L;
+        long totalCount = 1L;
         given(articleService.getArticleWithComments(articleId)).willReturn(createArticleWithCommentsDto());
+        given(articleService.getArticleCount()).willReturn(totalCount);
 
         mvc.perform(get("/articles/" + articleId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("article"))
-                .andExpect(model().attributeExists("articleComments"));
+                .andExpect(model().attributeExists("articleComments"))
+                .andExpect(model().attribute("totalCount", totalCount));
         then(articleService).should().getArticleWithComments(articleId);
         then(articleService).should().getArticleCount();
     }
+    @DisplayName("[GET]/articles/detail + 인증X -> LoginPage")
+    @Test
+    void givenNothing_whenRequestingArticlePage_thenRedirectsToLoginPage() throws Exception {
+        long articleId = 1L;
+
+        mvc.perform(get("/articles/" + articleId))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+        then(articleService).shouldHaveNoInteractions();
+        then(articleService).shouldHaveNoInteractions();
+    }
 
     /* UPDATE article */
-    @DisplayName("[GET]/articles/form : Update article Form page")
+    @DisplayName("[GET]/articles/form : 인증X -> LoginPage")
+    @Test
+    void givenNothing_whenRequesting_thenRedirectsToLoginPage() throws Exception {
+        long articleId = 1L;
+
+        mvc.perform(get("/articles/" + articleId + "/form"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("**/login"));
+        then(articleService).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("[GET]/articles/form : Update article Form page + 인증O")
+    @WithMockUser
     @Test
     void givenNothing_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
         long articleId = 1L;
@@ -128,6 +161,7 @@ class ArticleControllerTest {
     }
 
     @DisplayName("[POST]/articles/{articleId} : Update article")
+    @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Test
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesNewArticle() throws Exception {
         long articleId = 1L;
@@ -146,10 +180,12 @@ class ArticleControllerTest {
 
     /* DELETE article*/
     @DisplayName("[POST]/articles : Delete article")
+    @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Test
     void givenArticleIdToDelete_whenRequesting_thenDeletesArticle() throws Exception {
         long articleId = 1L;
-        willDoNothing().given(articleService).deleteArticle(articleId);
+        String userId = "testId";
+        willDoNothing().given(articleService).deleteArticle(articleId,userId);
 
         mvc.perform(post("/articles/" + articleId + "/delete")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
@@ -157,7 +193,7 @@ class ArticleControllerTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/articles"))
                 .andExpect(redirectedUrl("/articles"));
-        then(articleService).should().deleteArticle(articleId);
+        then(articleService).should().deleteArticle(articleId,userId);
     }
 
     /* Search 구현 */
