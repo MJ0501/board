@@ -4,11 +4,11 @@ import com.springboot.board.dto.ArticleCommentDto;
 import java.time.LocalDateTime;
 
 public record ArticleCommentsResponse(
-        Long id, String email, String nickname,
+        Long id, String email, String nickname, String userId,
         String content, LocalDateTime createdAt) {
 
-    public static ArticleCommentsResponse of(Long id, String email, String nickname, String content, LocalDateTime createdAt) {
-        return new ArticleCommentsResponse(id, email, nickname, content, createdAt);
+    public static ArticleCommentsResponse of(Long id, String email, String nickname, String userId,String content, LocalDateTime createdAt) {
+        return new ArticleCommentsResponse(id, email, nickname, userId,content, createdAt);
     }
 
     public static ArticleCommentsResponse from(ArticleCommentDto dto) {
@@ -16,6 +16,6 @@ public record ArticleCommentsResponse(
         if(nickname == null || nickname.isEmpty()) {
             nickname = dto.userAccountDto().userId();
         }
-        return new ArticleCommentsResponse(dto.id(), dto.userAccountDto().email(), nickname, dto.content(), dto.createdAt());
+        return new ArticleCommentsResponse(dto.id(), dto.userAccountDto().email(), nickname, dto.userAccountDto().userId(),dto.content(), dto.createdAt());
     }
 }
