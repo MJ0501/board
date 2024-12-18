@@ -1,11 +1,11 @@
 package com.springboot.board.controller;
 
-import com.springboot.board.config.SecurityConfig;
 import com.springboot.board.config.TestSecurityConfig;
 import com.springboot.board.domain.constant.FormStatus;
 import com.springboot.board.domain.constant.SearchType;
 import com.springboot.board.dto.ArticleDto;
 import com.springboot.board.dto.ArticleWithCommentsDto;
+import com.springboot.board.dto.HashtagDto;
 import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.dto.request.ArticleRequest;
 import com.springboot.board.dto.response.ArticleResponse;
@@ -69,7 +69,7 @@ class ArticleControllerTest {
     @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)
     @Test
     void givenNewArticleInfo_whenRequesting_thenSavesNewArticle() throws Exception {
-        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content");
         willDoNothing().given(articleService).saveArticle(any(ArticleDto.class));
 
         mvc.perform(post("/articles/form")
@@ -95,7 +95,8 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/index"))
                 .andExpect(model().attributeExists("articles"))
                 .andExpect(model().attributeExists("paginationBarNumbers"))
-                .andExpect(model().attributeExists("searchTypes"));
+                .andExpect(model().attributeExists("searchTypes"))
+                .andExpect(model().attribute("searchTypeHashtag", SearchType.HASHTAG));;
         then(articleService).should().searchArticles(eq(null), eq(null), any(Pageable.class));
         then(paginationService).should().getPagingBarNumbers(anyInt(), anyInt());
     }
@@ -103,7 +104,7 @@ class ArticleControllerTest {
     @DisplayName("[GET]/articles/detail : + with comments, + 인증O")
     @WithMockUser
     @Test
-    void whenRequestingArticleView_thenReturnsArticleView() throws Exception {
+    void givenAuthorizedUser_whenRequestingArticleView_thenReturnsArticleView() throws Exception {
         Long articleId = 1L;
         long totalCount = 1L;
         given(articleService.getArticleWithComments(articleId)).willReturn(createArticleWithCommentsDto());
@@ -115,7 +116,8 @@ class ArticleControllerTest {
                 .andExpect(view().name("articles/detail"))
                 .andExpect(model().attributeExists("article"))
                 .andExpect(model().attributeExists("articleComments"))
-                .andExpect(model().attribute("totalCount", totalCount));
+                .andExpect(model().attribute("totalCount", totalCount))
+                .andExpect(model().attribute("searchTypeHashtag", SearchType.HASHTAG));
         then(articleService).should().getArticleWithComments(articleId);
         then(articleService).should().getArticleCount();
     }
@@ -146,7 +148,7 @@ class ArticleControllerTest {
     @DisplayName("[GET]/articles/form : Update article Form page + 인증O")
     @WithMockUser
     @Test
-    void givenNothing_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
+    void givenAuthorizedUser_whenRequesting_thenReturnsUpdatedArticlePage() throws Exception {
         long articleId = 1L;
         ArticleDto dto = createArticleDto();
         given(articleService.getArticle(articleId)).willReturn(dto);
@@ -165,7 +167,7 @@ class ArticleControllerTest {
     @Test
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesNewArticle() throws Exception {
         long articleId = 1L;
-        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content", "#new");
+        ArticleRequest articleRequest = ArticleRequest.of("new title", "new content");
         willDoNothing().given(articleService).updateArticle(eq(articleId), any(ArticleDto.class));
 
         mvc.perform(post("/articles/" + articleId + "/form")
@@ -288,11 +290,11 @@ class ArticleControllerTest {
     }
 
     private ArticleDto createArticleDto(){
-        return ArticleDto.of(createUserAccountDto(),"title","content","#spring");
+        return ArticleDto.of(createUserAccountDto(),"title","content",Set.of(HashtagDto.of("java")));
     }
 
     private ArticleWithCommentsDto createArticleWithCommentsDto() {
-        return ArticleWithCommentsDto.of(1L,createUserAccountDto(), Set.of(),"title","content","#java", LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
+        return ArticleWithCommentsDto.of(1L,createUserAccountDto(), Set.of(),"title","content",Set.of(HashtagDto.of("java")), LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
     }
 
     private UserAccountDto createUserAccountDto() {
