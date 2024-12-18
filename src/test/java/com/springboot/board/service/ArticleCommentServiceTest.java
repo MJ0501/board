@@ -2,6 +2,7 @@ package com.springboot.board.service;
 
 import com.springboot.board.domain.Article;
 import com.springboot.board.domain.ArticleComment;
+import com.springboot.board.domain.Hashtag;
 import com.springboot.board.domain.UserAccount;
 import com.springboot.board.dto.ArticleCommentDto;
 import com.springboot.board.dto.UserAccountDto;
@@ -17,6 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.*;
@@ -24,10 +27,14 @@ import static org.mockito.BDDMockito.*;
 @DisplayName("비즈니스로직 - Comment")
 @ExtendWith(MockitoExtension.class)
 class ArticleCommentServiceTest {
-    @InjectMocks private ArticleCommentService sut;
-    @Mock private ArticleRepository articleRepository;
-    @Mock private ArticleCommentRepository articleCommentRepository;
-    @Mock private UserAccountRepository userAccountRepository;
+    @InjectMocks
+    private ArticleCommentService sut;
+    @Mock
+    private ArticleRepository articleRepository;
+    @Mock
+    private ArticleCommentRepository articleCommentRepository;
+    @Mock
+    private UserAccountRepository userAccountRepository;
 
     @DisplayName("ArticleID 조회 -> 댓글리스트반환")
     @Test
@@ -68,32 +75,6 @@ class ArticleCommentServiceTest {
         then(userAccountRepository).shouldHaveNoInteractions();
         then(articleCommentRepository).shouldHaveNoInteractions();
     }
-    
-    @DisplayName("CommentInfo -> Update Comment")
-    @Test
-    void givenArticleCommentInfo_whenUpdatingArticleComment_thenUpdatesArticleComment() {
-        String oldContent = "content";
-        String updatedContent = "댓글";
-        ArticleComment articleComment = createArticleComment(oldContent);
-        ArticleCommentDto dto = createArticleCommentDto(updatedContent);
-        given(articleCommentRepository.getReferenceById(dto.id())).willReturn(articleComment);
-
-        sut.updateArticleComment(dto);
-        assertThat(articleComment.getContent())
-                .isNotEqualTo(oldContent)
-                .isEqualTo(updatedContent);
-        then(articleCommentRepository).should().getReferenceById(dto.id());
-    }
-
-    @DisplayName("comment x -> update x -> 경고 로그")
-    @Test
-    void givenNonexistentArticleComment_whenUpdatingArticleComment_thenLogsWarningAndDoesNothing() {
-        ArticleCommentDto dto = createArticleCommentDto("댓글");
-        given(articleCommentRepository.getReferenceById(dto.id())).willThrow(EntityNotFoundException.class);
-
-        sut.updateArticleComment(dto);
-        then(articleCommentRepository).should().getReferenceById(dto.id());
-    }
 
     @DisplayName("CommentID -> Delete Comment")
     @Test
@@ -106,16 +87,23 @@ class ArticleCommentServiceTest {
         then(articleCommentRepository).should().deleteByIdAndUserAccount_UserId(articleCommentId,userId);
     }
 
-    private Article createArticle() {
-        return Article.of(createUserAccount(),"title","content","#java");
+    private Article createArticle(){
+        Article article = Article.of(createUserAccount(),"title","content");
+        article.addHashtags(Set.of(createHashtag(article)));
+        return article;
+    }
+
+    private Hashtag createHashtag(Article article) {
+        return Hashtag.of("java");
     }
 
     private ArticleComment createArticleComment(String content) {
-        return ArticleComment.of(Article.of(createUserAccount(),"title","content","hashtag"),createUserAccount(),content);
+        return ArticleComment.of(createArticle(),createUserAccount(),content);
     }
 
+
     private UserAccount createUserAccount() {
-        return UserAccount.of("MJ123", "pw", "MJ@mail.com", "MJ", null);
+        return UserAccount.of("MJ", "pw", "MJ@mail.com", "MJ", null);
     }
 
     private UserAccountDto createUserAccountDto() {
@@ -125,4 +113,5 @@ class ArticleCommentServiceTest {
     private ArticleCommentDto createArticleCommentDto(String content) {
         return ArticleCommentDto.of(1L,1L,createUserAccountDto(),content,LocalDateTime.now(),"MJ",LocalDateTime.now(),"MJ");
     }
+
 }

@@ -41,18 +41,6 @@ public class ArticleCommentService {
                 .stream().map(ArticleCommentDto::from).toList();
     }
 
-    //  UPDATE COMMENT
-    public void updateArticleComment(ArticleCommentDto dto) {
-        try{
-            ArticleComment articleComment = articleCommentRepository.getReferenceById(dto.id());
-            if(dto.content() != null) {
-                articleComment.setContent(dto.content());
-            }
-        }catch (EntityNotFoundException e){
-            log.warn("댓글 Update 실패. 댓글이 존재하지 않음. dto:{} ",dto);
-        }
-    }
-
     // DELETE COMMENT
     public void deleteArticleComment(Long articleCommentId, String userId) {
         articleCommentRepository.deleteByIdAndUserAccount_UserId(articleCommentId, userId);

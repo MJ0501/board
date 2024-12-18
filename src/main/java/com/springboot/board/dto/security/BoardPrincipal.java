@@ -12,40 +12,25 @@ import java.util.stream.Collectors;
 
 public record BoardPrincipal(
         String username, String password, Collection<? extends GrantedAuthority> authorities,
-        String email, String nickname, String memo
-) implements UserDetails {
+        String email, String nickname, String memo) implements UserDetails {
 
     public static BoardPrincipal of(String username, String password, String email, String nickname, String memo) {
+        /*권한에 대한 세팅은 임의로 지정*/
         Set<RoleType> roleTypes = Set.of(RoleType.USER);
 
-        return new BoardPrincipal(
-                username,
-                password,
-                roleTypes.stream()
-                        .map(RoleType::getName)
+        return new BoardPrincipal(username, password,
+                roleTypes.stream().map(RoleType::getName)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toUnmodifiableSet()),
                 email,nickname,memo);
     }
 
     public static BoardPrincipal from(UserAccountDto dto) {
-        return BoardPrincipal.of(
-                dto.userId(),
-                dto.userPassword(),
-                dto.email(),
-                dto.nickname(),
-                dto.memo()
-        );
+        return BoardPrincipal.of(dto.userId(), dto.userPassword(), dto.email(), dto.nickname(), dto.memo());
     }
 
     public UserAccountDto toDto() {
-        return UserAccountDto.of(
-                username,
-                password,
-                email,
-                nickname,
-                memo
-        );
+        return UserAccountDto.of(username, password, email, nickname, memo);
     }
 
 
