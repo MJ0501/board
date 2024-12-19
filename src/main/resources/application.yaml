@@ -6,6 +6,7 @@ logging:
         com.springboot.board: debug
         org.springframework.web.servlet: debug
         org.hibernate.type.descriptor.sql.BasicBinder: trace
+        org.springframework.security: debug
 
 spring:
     application.name: board
