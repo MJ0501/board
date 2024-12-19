@@ -261,7 +261,6 @@ class ArticleControllerTest {
         then(articleService).should().getHashtags();
         then(paginationService).should().getPagingBarNumbers(anyInt(), anyInt());
     }
-
     /* pagination, Sort 구현*/
     @DisplayName("[Pagination, Sort] /articles/index")
     @Test

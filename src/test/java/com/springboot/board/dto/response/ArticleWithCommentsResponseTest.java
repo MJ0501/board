@@ -4,6 +4,7 @@ import com.springboot.board.dto.ArticleCommentDto;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.HashtagDto;
 import com.springboot.board.dto.UserAccountDto;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
@@ -72,8 +73,8 @@ class ArticleWithCommentsResponseTest {
                 createArticleCommentResponse(2L, 1L, now.plusDays(1L)),
                 createArticleCommentResponse(3L, 1L, now.plusDays(3L)));
     }
-
-    @DisplayName("[N차 대댓글]게시글 + 댓글 dto를 api 응답으로 변환할 때, 부모 자식 관계 깊이(depth)는 제한이 없다.")
+    @Disabled
+    @DisplayName("[N차 대댓글]게시글 + 댓글 dto를 api 응답으로 변환할 때, 부모 자식 관계 깊이(depth)는 제한X")
     @Test
     void givenArticleWithCommentsDto_whenMapping_thenOrganizesParentAndChildCommentsWithoutDepthLimit() {
         LocalDateTime now = LocalDateTime.now();

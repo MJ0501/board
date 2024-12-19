@@ -49,7 +49,7 @@ class ArticleServiceTest {
     private HashtagService hashtagService;
 
     /////* CREATE */
-    @DisplayName("2. ArticleInfo -> Create Article with hashtagInfo(content에서 hashtagInfo추출)")
+    @DisplayName("ArticleInfo -> Create Article with hashtagInfo(content에서 hashtagInfo추출)")
     @Test
     void givenArticleInfo_whenSuccessSaving_thenExtractsHashtagsFromContentAndSavesArticle(){
         ArticleDto dto = createArticleDto();
@@ -70,7 +70,7 @@ class ArticleServiceTest {
     }
 
     /////* READ */
-    @DisplayName("1. 없는 게시글 조회 -> ThrowsException")
+    @DisplayName("없는 게시글 조회 -> ThrowsException")
     @Test
     void givenNonexistentArticleId_whenSearchingArticle_thenThrowsException() {
         Long articleId = 0L;
@@ -83,7 +83,7 @@ class ArticleServiceTest {
         then(articleRepository).should().findById(articleId);
     }
 
-    @DisplayName("1.2 article detail + with Comments")
+    @DisplayName("article detail + with Comments")
     @Test
     void givenArticleId_whenSearchingArticle_thenReturnsArticleWithComments() {
         Long articleId = 1L;
@@ -98,7 +98,7 @@ class ArticleServiceTest {
         then(articleRepository).should().findById(articleId);
     }
 
-    @DisplayName("1.2 댓글 달린 게시글이 없으면, 예외를 던진다.")
+    @DisplayName("댓글 달린 게시글이 없으면, 예외를 던진다.")
     @Test
     void givenNonexistentArticleId_whenSearchingArticleWithComments_thenThrowsException() {
         Long articleId = 0L;

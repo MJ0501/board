@@ -31,20 +31,15 @@ class AuthControllerTest {
     }
 
 
-    @DisplayName("GET 로그인 페이지 - 정상 호출")
+    @DisplayName("[GET] /login")
     @Test
     void whenLogIn_thenReturnsLogInView() throws Exception {
-        // Given
-
-        // When & Then
         mvc.perform(
                 get("/login"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
         then(articleService).shouldHaveNoInteractions();
-        //then(paginationService).shouldHaveNoInteractions();
     }
-
 
     /**
      * 어떤 컨트롤러도 필요하지 않은 테스트임을 나타내기 위해 테스트용 빈 컴포넌트를 사용함.

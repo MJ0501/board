@@ -26,7 +26,6 @@ public class ArticleController {
     private final ArticleService articleService;
     private final PaginationService paginationService;
 
-    /* Article CRUD */
     // Create Article
     @GetMapping("/form")
     public String createArticleForm(ModelMap map){
@@ -77,7 +76,6 @@ public class ArticleController {
 
     @PostMapping("/{articleId}/form")
     public String updateArticle(@PathVariable Long articleId, ArticleRequest request,@AuthenticationPrincipal BoardPrincipal boardPrincipal){
-
         articleService.updateArticle(articleId,request.toDto(boardPrincipal.toDto()));
         return "redirect:/articles/"+articleId;
     }
