@@ -58,6 +58,25 @@ class ArticleCommentControllerTest {
         then(articleCommentService).should().saveArticleComment(any(ArticleCommentDto.class));
 
     }
+    /* 대댓글 생성 */
+    @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)
+    @DisplayName("[POST]/comments/new : Child Comment")
+    @Test
+    void givenArticleCommentInfoWithParentCommentId_whenRequesting_thenSavesNewChildComment() throws Exception {
+        long articleId = 1L;
+        ArticleCommentRequest request = ArticleCommentRequest.of(articleId, 1L, "test comment");
+        willDoNothing().given(articleCommentService).saveArticleComment(any(ArticleCommentDto.class));
+
+        mvc.perform(post("/comments/new")
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .content(formDataEncoder.encode(request))
+                    .with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/articles/" + articleId))
+                .andExpect(redirectedUrl("/articles/" + articleId));
+        then(articleCommentService).should().saveArticleComment(any(ArticleCommentDto.class));
+    }
+
     // DELETE COMMENT
     @DisplayName("[GET]/comments/{commentId}/delete : DELETE COMMENT")
     @WithUserDetails(value = "testId", setupBefore = TestExecutionEvent.TEST_EXECUTION)

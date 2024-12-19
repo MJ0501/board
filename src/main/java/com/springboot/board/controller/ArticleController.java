@@ -2,7 +2,6 @@ package com.springboot.board.controller;
 
 import com.springboot.board.domain.constant.FormStatus;
 import com.springboot.board.domain.constant.SearchType;
-import com.springboot.board.dto.UserAccountDto;
 import com.springboot.board.dto.request.ArticleRequest;
 import com.springboot.board.dto.response.ArticleResponse;
 import com.springboot.board.dto.response.ArticleWithCommentsResponse;
@@ -61,7 +60,7 @@ public class ArticleController {
     public String article(@PathVariable Long articleId, ModelMap map) {
         ArticleWithCommentsResponse articleWithComments = ArticleWithCommentsResponse.from(articleService.getArticleWithComments(articleId));
         map.addAttribute("article", articleWithComments);
-        map.addAttribute("articleComments", articleWithComments.articleCommentsResponse());
+        map.addAttribute("articleComments", articleWithComments.articleCommentResponse());
         map.addAttribute("totalCount", articleService.getArticleCount());
         map.addAttribute("searchTypeHashtag", SearchType.HASHTAG);
         return "articles/detail";
