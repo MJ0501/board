@@ -1,19 +1,20 @@
 package com.springboot.board.dto.response;
+import com.springboot.board.dto.ArticleCommentDto;
 import com.springboot.board.dto.ArticleWithCommentsDto;
 import com.springboot.board.dto.HashtagDto;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public record ArticleWithCommentsResponse(
         Long id, String email, String nickname, String userId,
         String title, String content,  Set<String> hashtags, LocalDateTime createdAt,
-        Set<ArticleCommentsResponse> articleCommentsResponse
+        Set<ArticleCommentResponse> articleCommentResponse
 ) {
-    public static ArticleWithCommentsResponse of(Long id, String email, String nickname, String userId, String title, String content,  Set<String> hashtags, LocalDateTime createdAt, Set<ArticleCommentsResponse> articleCommentsResponses) {
-        return new ArticleWithCommentsResponse(id, email, nickname, userId, title, content, hashtags, createdAt, articleCommentsResponses);
+    public static ArticleWithCommentsResponse of(Long id, String email, String nickname, String userId, String title, String content,  Set<String> hashtags, LocalDateTime createdAt, Set<ArticleCommentResponse> articleCommentResponse) {
+        return new ArticleWithCommentsResponse(id, email, nickname, userId, title, content, hashtags, createdAt, articleCommentResponse);
     }
 
     public static ArticleWithCommentsResponse from(ArticleWithCommentsDto dto) {
@@ -24,7 +25,23 @@ public record ArticleWithCommentsResponse(
         return new ArticleWithCommentsResponse(
                 dto.id(),dto.userAccountDto().email(), nickname, dto.userAccountDto().userId(),
                 dto.title(), dto.content(), dto.hashtagDtos().stream().map(HashtagDto::hashtagName).collect(Collectors.toUnmodifiableSet()), dto.createdAt(),
-                dto.articleCommentDtos().stream().map(ArticleCommentsResponse::from).collect(Collectors.toCollection(LinkedHashSet::new))
-        );
+                organizeChildComments(dto.articleCommentDtos()));
+    }
+
+    private static Set<ArticleCommentResponse> organizeChildComments(Set<ArticleCommentDto> dtos) {
+        Map<Long, ArticleCommentResponse> map = dtos.stream()
+                .map(ArticleCommentResponse::from)
+                .collect(Collectors.toMap(ArticleCommentResponse::id, Function.identity()));
+
+        map.values().stream().filter(ArticleCommentResponse::hasParentComment)
+                .forEach(comment -> {
+                    ArticleCommentResponse parentComment = map.get(comment.parentCommentId());
+                    parentComment.childComments().add(comment);});
+
+        return map.values().stream().filter(comment -> !comment.hasParentComment())
+                .collect(Collectors.toCollection(() -> new TreeSet<>(Comparator
+                        .comparing(ArticleCommentResponse::createdAt)
+                        .reversed()
+                        .thenComparingLong(ArticleCommentResponse::id))));
     }
 }
