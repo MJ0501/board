@@ -30,17 +30,17 @@ class HashtagServiceTest {
     @Mock
     private HashtagRepository hashtagRepository;
 
-    @DisplayName("Content_Parsing -> HashtagName 중복X")
+    @DisplayName("Content_Parsing -> HashtagName 중복X (소문자로만 파싱됨)")
     @MethodSource
     @ParameterizedTest(name = "[{index}] \"{0}\" => {1}")
-    void givenContent_whenParsing_thenReturnsUniqueHashtagNames(String input, Set<String> expected) {
+    void givenContent_whenParsing_thenReturnsUniqueHashtagNamesIgnoringCase(String input, Set<String> expected) {
 
         Set<String> actual = sut.parseHashtagNames(input);
         assertThat(actual).containsExactlyInAnyOrderElementsOf(expected);
         then(hashtagRepository).shouldHaveNoInteractions();
     }
 
-    static Stream<Arguments> givenContent_whenParsing_thenReturnsUniqueHashtagNames() {
+    static Stream<Arguments> givenContent_whenParsing_thenReturnsUniqueHashtagNamesIgnoringCase() {
         return Stream.of(
                 arguments(null, Set.of()),
                 arguments("", Set.of()),

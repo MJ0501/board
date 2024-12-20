@@ -16,6 +16,7 @@ import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -54,19 +55,27 @@ class ArticleServiceTest {
     void givenArticleInfo_whenSuccessSaving_thenExtractsHashtagsFromContentAndSavesArticle(){
         ArticleDto dto = createArticleDto();
         Set<String> expectedHashtagNames = Set.of("java", "spring");
-        Set<Hashtag> expectedHashtags = new HashSet<>();
-        expectedHashtags.add(createHashtag("java"));
+        Set<Hashtag> expectedExistingHashtags = new HashSet<>();
+        expectedExistingHashtags.add(createHashtag("java"));
+        Article expectedArticle = createArticle();
+        ArgumentCaptor<Article> articleCaptor = ArgumentCaptor.forClass(Article.class);
 
         given(userAccountRepository.getReferenceById(dto.userAccountDto().userId())).willReturn(createUserAccount());
         given(hashtagService.parseHashtagNames(dto.content())).willReturn(expectedHashtagNames);
-        given(hashtagService.findHashtagsByNames(expectedHashtagNames)).willReturn(expectedHashtags);
+        given(hashtagService.findHashtagsByNames(expectedHashtagNames)).willReturn(expectedExistingHashtags);
         given(articleRepository.save(any(Article.class))).willReturn(createArticle());
 
         sut.saveArticle(dto);
         then(userAccountRepository).should().getReferenceById(dto.userAccountDto().userId());
         then(hashtagService).should().parseHashtagNames(dto.content());
         then(hashtagService).should().findHashtagsByNames(expectedHashtagNames);
-        then(articleRepository).should().save(any(Article.class));
+        then(articleRepository).should().save(articleCaptor.capture());
+        assertThat(articleCaptor.getValue())
+                .hasFieldOrPropertyWithValue("title", dto.title())
+                .hasFieldOrPropertyWithValue("content", dto.content())
+                .extracting("hashtags", as(InstanceOfAssertFactories.COLLECTION))
+                .extracting("hashtagName")
+                .containsExactlyInAnyOrderElementsOf(expectedHashtagNames);
     }
 
     /////* READ */
