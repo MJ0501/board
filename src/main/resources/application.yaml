@@ -7,13 +7,15 @@ logging:
         org.springframework.web.servlet: debug
         org.hibernate.type.descriptor.sql.BasicBinder: trace
         org.springframework.security: debug
+        org.springframework.security.oauth2.client: DEBUG
+        org.springframework.security.oauth2.provider: DEBUG
 
 spring:
     application.name: board
     datasource:
-        url: jdbc:mysql://localhost:3307/board?useSSL=false&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true
-        username: root
-        password: admin1234!
+        url:  ${LOCAL_DB_URL}
+        username: ${LOCAL_DB_USERNAME}
+        password: ${LOCAL_DB_PASSWORD}
         driver-class-name: com.mysql.cj.jdbc.Driver
     jpa:
         open-in-view: false
@@ -28,6 +30,22 @@ spring:
         base-path: /api
         detection-strategy: annotated
     thymeleaf3.decoupled-logic: true
+    security:
+        oauth2:
+            client:
+                registration:
+                    kakao:
+                        clientId: ${KAKAO_CLIENT_ID}
+                        clientSecret: ${KAKAO_CLIENT_SECRET}
+                        authorization-grant-type: authorization_code
+                        redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+                        client-authentication-method: POST
+                provider:
+                    kakao:
+                        authorization-uri: https://kauth.kakao.com/oauth/authorize
+                        token-uri: https://kauth.kakao.com/oauth/token
+                        user-info-uri: https://kapi.kakao.com/v2/user/me
+                        user-name-attribute: id
 #---
 #spring:
 #    config.activate.on-profile: testdb
