@@ -1,27 +1,28 @@
 package com.springboot.board.config;
 
-import com.springboot.board.domain.UserAccount;
-import com.springboot.board.repository.UserAccountRepository;
+import com.springboot.board.dto.UserAccountDto;
+import com.springboot.board.service.UserAccountService;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.event.annotation.BeforeTestMethod;
 import java.util.Optional;
+
 import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.anyString;
 
 @Import(SecurityConfig.class)
 public class TestSecurityConfig {
 
-    @MockBean private UserAccountRepository userAccountRepository;
+    @MockBean private UserAccountService userAccountService;
 
     @BeforeTestMethod
     void securitySetUp() {
-        given(userAccountRepository.findById(anyString()))
-                .willReturn(Optional.of(createUserAccountDto()));
+        given(userAccountService.searchUser(anyString())).willReturn(Optional.of(createUserAccountDto()));
+        given(userAccountService.saveUser(anyString(), anyString(),anyString(),anyString(),anyString())).willReturn(createUserAccountDto());
     }
 
-    private UserAccount createUserAccountDto() {
-        return UserAccount.of(
+    private UserAccountDto createUserAccountDto() {
+        return UserAccountDto.of(
                 "testId",
                 "pw",
                 "test@email.com",
@@ -29,5 +30,4 @@ public class TestSecurityConfig {
                 "test-memo"
         );
     }
-
 }
