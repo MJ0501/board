@@ -46,7 +46,10 @@ public class SecurityConfig {
                                 "/articles/search-hashtag"
                         ).permitAll()
                         .anyRequest().authenticated())
-                .formLogin(withDefaults())
+                .formLogin(form -> form
+                        .defaultSuccessUrl("/", true) // 로그인 성공 후 항상 "/"로 이동
+                        .failureUrl("/login?error=true") // 로그인 실패 시 리다이렉트
+                        .permitAll())
                 .logout(logout -> logout.logoutSuccessUrl("/"))
                 .oauth2Login(oAuth -> oAuth
                         .userInfoEndpoint(userInfo -> userInfo
